@@ -5,32 +5,30 @@ from typing import Optional
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-from app.database import db
+from app.supabase_client import get_supabase
 
 scheduler: Optional[AsyncIOScheduler] = None
 
 
 async def check_overdue_loans() -> None:
-	if db.client is None or db.database is None:
+	sb = get_supabase()
+	if sb is None:
 		return
 	now = datetime.utcnow()
 	# Find loans with due_date < now and status not repaid/overdue
-	cursor = db.database.loans.find({
-		"due_date": {"$lt": now},
-		"status": {"$nin": ["repaid", "overdue"]},
-	})
-	async for loan in cursor:
+	res = sb.table("loans").select("id, amount, due_date, status, borrower_id").lt("due_date", now.isoformat()).not_.in_("status", ["repaid", "overdue"]).execute()
+	for loan in res.data or []:
 		# Mark overdue
-		await db.database.loans.update_one({"_id": loan["_id"]}, {"$set": {"status": "overdue"}})
+		sb.table("loans").update({"status": "overdue"}).eq("id", loan["id"]).execute()
 		# Notify borrower
-		await db.database.notifications.insert_one({
+		sb.table("notifications").insert({
 			"user_id": loan["borrower_id"],
-			"loan_id": str(loan["_id"]),
+			"loan_id": loan["id"],
 			"type": "loan_overdue",
-			"message": f"Loan of {loan['amount']} is overdue. Due date was {loan['due_date'].isoformat()}.",
-			"created_at": datetime.utcnow(),
+			"message": f"Loan of {loan['amount']} is overdue. Due date was {loan['due_date']}.",
+			"created_at": now.isoformat(),
 			"read": False,
-		})
+		}).execute()
 
 
 def start_scheduler() -> None:

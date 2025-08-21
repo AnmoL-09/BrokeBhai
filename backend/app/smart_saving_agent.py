@@ -4,7 +4,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 import google.generativeai as genai
-from app.database import db
+from app.supabase_client import get_supabase
 
 # ========== STEP 0: CONFIG ==========
 # Replace with your Gemini API key
@@ -14,35 +14,44 @@ genai.configure(api_key=GEMINI_API_KEY)
 
 # ========== STEP 1: DATA INPUT FROM MONGODB ==========
 async def get_user_transactions(user_id: str, days: int = 30) -> pd.DataFrame:
-    """Fetch user transactions from MongoDB and convert to DataFrame"""
-    if db.client is None or db.database is None:
-        raise ValueError("Database connection not available")
-    
+    """Fetch user transactions from Supabase and convert to DataFrame."""
+    sb = get_supabase()
+    if sb is None:
+        raise ValueError("Supabase client not initialized")
+
     # Calculate date range
     end_date = datetime.utcnow()
     start_date = end_date - timedelta(days=days)
-    
-    # Fetch transactions from MongoDB
-    cursor = db.database.transactions.find({
-        "user_id": user_id,
-        "date": {"$gte": start_date, "$lte": end_date},
-        "transaction_type": "expense"  # Focus on expenses for savings analysis
-    }).sort("date", 1)
-    
-    transactions = await cursor.to_list(None)
-    
-    if not transactions:
-        # Return empty DataFrame with expected columns
+
+    # Resolve UUID
+    user_res = sb.table("users").select("id").or_(f"clerkUserId.eq.{user_id},email.eq.{user_id}").limit(1).execute()
+    if not user_res.data:
         return pd.DataFrame(columns=["date", "expense", "category", "description"])
-    
-    # Convert to DataFrame
+    resolved_user_id = user_res.data[0]["id"]
+
+    # Fetch expense transactions from Supabase
+    res = (
+        sb.table("transactions")
+        .select("date, amount, category, description, type")
+        .eq("userId", resolved_user_id)
+        .eq("type", "EXPENSE")
+        .gte("date", start_date.isoformat())
+        .lte("date", end_date.isoformat())
+        .order("date", desc=False)
+        .execute()
+    )
+    rows = res.data or []
+
+    if not rows:
+        return pd.DataFrame(columns=["date", "expense", "category", "description"])
+
     data = []
-    for tx in transactions:
+    for tx in rows:
         data.append({
-            "date": tx["date"],
-            "expense": tx["amount"],
+            "date": tx.get("date"),
+            "expense": float(tx.get("amount", 0)),
             "category": tx.get("category", "unknown"),
-            "description": tx.get("description", "")
+            "description": tx.get("description", ""),
         })
     
     df = pd.DataFrame(data)
@@ -188,7 +197,7 @@ def get_gemini_suggestions(expenses: pd.DataFrame, forecast_df: pd.DataFrame, us
     """
     
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("gemini-2.5-pro")
         response = model.generate_content(prompt)
         return response.text
     except Exception as e:
