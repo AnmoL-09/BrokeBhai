@@ -2,7 +2,10 @@
 
 ## Team Details  
 - **Team Name:** ByteBenders
-- **Team Members:** [Add team member names here]
+- **Team Members:** Sourabh Singh, Anmol Mahobiya, Sumant Sahu, Anshika Chandrawanshi
+
+## PPT Link : 
+https://docs.google.com/presentation/d/1K1tPSb0GOUF_spdXFLP2hoBbi1BYQPlD/edit?usp=sharing&ouid=109564785001838202691&rtpof=true&sd=true
 
 ## Problem Statement  
 Traditional financial management tools lack intelligent insights and personalized recommendations. BrokeBhai solves this by providing AI-powered financial analysis, smart spending predictions, and automated loan management to help users make informed financial decisions.
