@@ -2,7 +2,7 @@
 
 ## Team Details  
 - **Team Name:** ByteBenders
-- **Team Members:** Sourabh Singh, Anmol Mahobiya, Sumant Sahu, Anshika Chandrawanshi
+- **Team Members:** Anmol Mahobiya, Sourabh Singh, Sumant Sahu, Anshika Chandrawanshi
 
 ## PPT Link : 
 https://docs.google.com/presentation/d/1K1tPSb0GOUF_spdXFLP2hoBbi1BYQPlD/edit?usp=sharing&ouid=109564785001838202691&rtpof=true&sd=true
