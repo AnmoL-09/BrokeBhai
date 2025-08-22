@@ -5,8 +5,10 @@ import { getCurrentBudget } from "@/actions/budget";
 import { AccountCard } from "./_components/account-card";
 import { CreateAccountDrawer } from "@/components/create-account-drawer";
 import { BudgetProgress } from "./_components/budget-progress";
+import { SavingsGoal } from "./_components/savings-goal";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Plus, Bell } from "lucide-react";
 import { DashboardOverview } from "./_components/transaction-overview";
 
 export default async function DashboardPage() {
@@ -30,6 +32,9 @@ export default async function DashboardPage() {
         initialBudget={budgetData?.budget}
         currentExpenses={budgetData?.currentExpenses || 0}
       />
+
+      {/* Savings Goals */}
+      <SavingsGoal userAccount={defaultAccount} userAccounts={accounts} />
 
       {/* Dashboard Overview */}
       <DashboardOverview

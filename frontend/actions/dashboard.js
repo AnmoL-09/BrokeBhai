@@ -146,11 +146,14 @@ export async function getDashboardData() {
     throw new Error("User not found");
   }
 
-  // Get all user transactions
-  const transactions = await db.transaction.findMany({
-    where: { userId: user.id },
-    orderBy: { date: "desc" },
-  });
+  // Get all user transactions with retry logic
+  const { withRetry } = await import('@/lib/db-utils');
+  const transactions = await withRetry(() => 
+    db.transaction.findMany({
+      where: { userId: user.id },
+      orderBy: { date: "desc" },
+    })
+  );
 
   return transactions.map(serializeTransaction);
 }

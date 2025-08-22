@@ -13,7 +13,7 @@ const Header = async () => {
     <header className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b">
       <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/">
-          <h3>FinSmart</h3>
+          <h3>BrokeBhai</h3>
         </Link>
 
         {/* Navigation Links - Different for signed in/out users */}

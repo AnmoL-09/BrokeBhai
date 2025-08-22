@@ -17,11 +17,14 @@ export async function getCurrentBudget(accountId) {
       throw new Error("User not found");
     }
 
-    const budget = await db.budget.findFirst({
-      where: {
-        userId: user.id,
-      },
-    });
+    const { withRetry } = await import('@/lib/db-utils');
+    const budget = await withRetry(() => 
+      db.budget.findFirst({
+        where: {
+          userId: user.id,
+        },
+      })
+    );
 
     // Get current month's expenses
     const currentDate = new Date();

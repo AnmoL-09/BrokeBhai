@@ -1,5 +1,6 @@
 # app/main.py
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.database import connect_to_mongo, close_mongo_connection, db
 from app.ml_model import load_ml_model
@@ -30,6 +31,15 @@ app = FastAPI(
 	description="Backend for financial management app",
 	version="1.0.0",
 	lifespan=lifespan
+)
+
+# Add CORS middleware
+app.add_middleware(
+	CORSMiddleware,
+	allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"],
+	allow_credentials=True,
+	allow_methods=["*"],
+	allow_headers=["*"],
 )
 
 # Include routers
